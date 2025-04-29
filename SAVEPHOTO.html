@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Save Your Photo Strip - SNAP SPARK</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Arial', sans-serif;
+      background: #f0f0ff;
+      color: #4b0082;
+      text-align: center;
+    }
+    #controls {
+      margin-bottom: 20px;
+    }
+    #strips-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 40px;
+      margin-bottom: 20px;
+    }
+    #photo-strip, #generated-strip {
+      background: white;
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .photo {
+      width: 250px;
+      height: 170px;
+      object-fit: cover;
+      display: block;
+      margin: 10px auto;
+    }
+    input[type="color"], input[type="text"], button {
+      margin: 5px;
+      padding: 8px 16px;
+      font-size: 1rem;
+      border-radius: 20px;
+      border: 2px solid #6a5acd;
+      background: white;
+      color: #6a5acd;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    input[type="color"]:hover, input[type="text"]:hover, button:hover {
+      background: #6a5acd;
+      color: white;
+    }
+    #stickers-container {
+      margin-bottom: 20px;
+    }
+    .sticker {
+      margin: 5px;
+      cursor: grab;
+    }
+    #saveBtn {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="controls">
+    Background Color: 
+    <input type="color" id="bgColorPicker" value="#ffffff">
+
+    Label Text: 
+    <input type="text" id="labelInput" placeholder="Enter name, date, etc.">
+
+    <button id="generateBtn">Generate Strip</button>
+  </div>
+
+  <div id="strips-container">
+    <div id="photo-strip">
+    </div>
+    <div id="generated-strip">
+      <canvas id="stripCanvas"></canvas>
+    </div>
+  </div>
+
+  <div id="stickers-container">
+    <p>Drag a sticker onto your strip!</p>
+    <img src="https://cdn-icons-png.flaticon.com/512/833/833472.png" class="sticker" draggable="true" width="40" height="40">
+    <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" class="sticker" draggable="true" width="40" height="40">
+    <img src="https://cdn-icons-png.flaticon.com/512/2589/2589175.png" class="sticker" draggable="true" width="40" height="40">
+  </div>
+  
+  <button id="saveBtn" style="display:none;">Save Strip</button>
+  <button id="newPhotoBtn" style="display:none;">Take New Photo</button>
+
+  <script>
+    const bgColorPicker = document.getElementById('bgColorPicker');
+    const labelInput = document.getElementById('labelInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const photoStrip = document.getElementById('photo-strip');
+    const stripCanvas = document.getElementById('stripCanvas');
+
+    let photos = JSON.parse(localStorage.getItem('capturedPhotos') || '[]');
+    let draggedSticker = null;
+
+    document.querySelectorAll('.sticker').forEach(sticker => {
+      sticker.addEventListener('dragstart', (e) => {
+        draggedSticker = sticker;
+      });
+    });
+
+    stripCanvas.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+
+    stripCanvas.addEventListener('drop', (e) => {
+      e.preventDefault();
+      if (!draggedSticker) return;
+
+      const rect = stripCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const ctx = stripCanvas.getContext('2d');
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = draggedSticker.src;
+      img.onload = () => {
+        ctx.drawImage(img, padding, padding + i * (photoHeight + padding), canvasWidth - padding * 2, photoHeight);
+        resolve();
+      };
+      img.src = photos[i];
+    });
+
+    function displayPhotos() {
+      photoStrip.innerHTML = '';
+      photos.forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.className = 'photo';
+        photoStrip.appendChild(img);
+      });
+    }
+
+    generateBtn.addEventListener('click', async () => {
+      if (photos.length === 0) {
+        alert('No photos found.');
+        return;
+      }
+
+      const canvasWidth = 300;
+      const photoHeight = 200;
+      const padding = 10;
+      const labelHeight = 40;
+      const canvasHeight = photos.length * (photoHeight + padding) + padding + labelHeight;
+
+      stripCanvas.width = canvasWidth;
+      stripCanvas.height = canvasHeight;
+      const ctx = stripCanvas.getContext('2d');
+
+      ctx.fillStyle = bgColorPicker.value;
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      for (let i = 0; i < photos.length; i++) {
+        await new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            ctx.drawImage(img, padding, padding + i * (photoHeight + padding), canvasWidth - padding * 2, photoHeight);
+            resolve();
+          };
+          img.src = photos[i];
+        });
+      }
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "20px Times New Roman";
+      ctx.textAlign = "center";
+
+      ctx.shadowColor = "rgba(0, 0, 0, 0.7)";
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
+      ctx.shadowBlur = 4;
+
+      ctx.fillText(labelInput.value || "", canvasWidth / 2, canvasHeight - 10);
+
+      ctx.shadowColor = "transparent";
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      ctx.shadowBlur = 0;
+
+      saveBtn.style.display = 'inline-block';
+      newPhotoBtn.style.display = 'inline-block';
+    });
+
+    saveBtn.addEventListener('click', () => {
+      const dataURL = stripCanvas.toDataURL('image/png');
+      if (dataURL === 'data:,') {
+        alert("Failed to generate image. Possible cross-origin issue.");
+      return;
+  }
+
+      const link = document.createElement('a');
+      link.download = 'SnapStrip.png';
+      link.href = dataURL;
+      link.click();
+    });
+      const newPhotoBtn = document.getElementById('newPhotoBtn');
+
+      newPhotoBtn.addEventListener('click', () => {
+      window.location.href = 'LAYOUT.html';
+    });
+
+    displayPhotos();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Choose Your Layout - SNAP SPARK</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background: radial-gradient(circle, #cbcbff 0%, #ffffff 100%);
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #4b0082;
+    }
+    h1 {
+      font-size: 40px;
+      margin-bottom: 20px;
+      color: #6a5acd;
+    }
+    p {
+      font-size: 16px;
+      margin-bottom: 40px;
+      color: #4b0082;
+    }
+    .layout-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      width: 80%;
+      max-width: 800px;
+      text-align: center;
+    }
+    .layout {
+      padding: 20px;
+      border: 2px solid #6a5acd;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+      font-weight: bold;
+      background: white;
+      color: #6a5acd;
+    }
+    .layout.selected {
+      background: #6a5acd;
+      color: white;
+    }
+    .layout:hover {
+      background: #6a5acd;
+      color: white;
+      transform: scale(1.05);
+    }
+    button {
+      margin-top: 30px;
+      padding: 10px 30px;
+      font-size: 1rem;
+      border: 2px solid #6a5acd;
+      background: transparent;
+      color: #6a5acd;
+      cursor: pointer;
+      border-radius: 20px;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #6a5acd;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Choose Your Layout</h1>
+  <p>Choose your SnapSpark layout — each style brings new vibes and fresh poses!</p>
+
+  <div class="layout-options">
+    <div class="layout" data-layout="A">Layout A<br><small>4 box</small></div>
+    <div class="layout" data-layout="B">Layout B<br><small>3 box</small></div>
+    <div class="layout" data-layout="C">Layout C<br><small>2 box</small></div>
+    <div class="layout" data-layout="D">Layout D<br><small>1 box</small></div>
+  </div>  
+
+  <button id="continueBtn">Continue</button>
+
+  <script>
+    let selectedLayout = null;
+
+    const layouts = document.querySelectorAll('.layout');
+    layouts.forEach(layout => {
+      layout.addEventListener('click', () => {
+        layouts.forEach(l => l.classList.remove('selected'));
+        layout.classList.add('selected'); 
+        selectedLayout = layout.getAttribute('data-layout');
+      });
+    });
+
+    document.getElementById('continueBtn').addEventListener('click', () => {
+      if (selectedLayout) {
+        localStorage.setItem('selectedLayout', selectedLayout);
+        window.location.href = 'PHOTOBOOTH.html'; 
+      } else {
+        alert('Please select a layout first!');
+      }
+    });
+</script>
+</body>
+</html>
